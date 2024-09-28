@@ -2,9 +2,7 @@ use std::io::{self};
 
 use crossterm::{event, terminal};
 
-use crate::{
-    ignore_io_error, term_cursor_col, term_cursor_down, term_exec, term_printf, Item, Menu, Mode,
-};
+use crate::{macros::*, Item, Menu, Mode};
 
 impl<T> Item<T> {
     pub fn new(display: &str, value: T) -> Item<T> {

@@ -1,7 +1,4 @@
-use crate::{
-    term_clear_from_cursor_down, term_cursor_down, term_cursor_move, term_exec, term_print,
-    term_printf, Menu, Mode,
-};
+use crate::{macros::*, Menu, Mode};
 use std::io;
 
 impl<T> Menu<T> {

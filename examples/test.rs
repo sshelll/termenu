@@ -1,4 +1,11 @@
-use termenu::{quit_now, Item};
+use termenu::Item;
+
+macro_rules! quit_now {
+    ($content:expr, $($arg:tt)*) => {
+        eprintln!($content, $($arg)*);
+        std::process::exit(1);
+    };
+}
 
 fn main() {
     let mut menu = termenu::Menu::new().unwrap_or_else(|e| {

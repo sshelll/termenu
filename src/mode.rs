@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::{term_exec, Menu, Mode};
+use crate::{macros::*, Menu, Mode};
 
 impl<T> Menu<T> {
     pub(crate) fn enter_normal_mode(&mut self) -> io::Result<()> {
