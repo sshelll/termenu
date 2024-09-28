@@ -1,15 +1,14 @@
 #![allow(dead_code)]
-mod menu;
-
-mod keymap;
-
+mod core;
 mod draw;
+mod keymap;
+mod mode;
 
 #[macro_use]
 mod macros;
 
 pub struct Item<T> {
-    display: String,
+    alias: String,
     pub value: T,
 }
 
@@ -20,12 +19,15 @@ enum Mode {
 
 pub struct Menu<T> {
     title: Option<String>,
-    item_list: Vec<Item<T>>,
+    item_list: Vec<Option<Item<T>>>,
     mode: Mode,
 
-    // cursor absolute position (row, col)
+    // original cursor absolute position (row, col)
     cursor_abs_pos: (u16, u16),
 
     selection_idx: u16,
     selected: bool,
+
+    query: String,
+    query_cursor_col: u16,
 }

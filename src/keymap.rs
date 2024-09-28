@@ -2,9 +2,11 @@ use std::{cmp, io};
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use crate::{term_exec_stdout, Menu, Mode};
+use crate::{Menu, Mode};
 
 impl<T> Menu<T> {
+    /// Dispatch a key event.
+    /// returns true if the event should cause the menu to exit.
     pub(crate) fn dispatch_key(&mut self, key: KeyEvent) -> io::Result<bool> {
         match key.modifiers {
             KeyModifiers::CONTROL => {
@@ -19,6 +21,13 @@ impl<T> Menu<T> {
     }
 
     fn dispatch_code(&mut self, code: KeyCode) -> io::Result<bool> {
+        match self.mode {
+            Mode::Normal => self.dispatch_normal(code),
+            Mode::Query => self.dispatch_query(code),
+        }
+    }
+
+    fn dispatch_normal(&mut self, code: KeyCode) -> io::Result<bool> {
         match code {
             KeyCode::Up | KeyCode::Char('k') => self.key_up(),
 
@@ -27,15 +36,40 @@ impl<T> Menu<T> {
             KeyCode::Esc => return self.key_esc(),
 
             KeyCode::Enter => {
-                self.selected = true;
+                self.key_enter();
                 return Ok(true);
             }
 
             KeyCode::Char('/') => {
-                unimplemented!()
+                self.enter_query_mode()?;
             }
             _ => {}
         };
+        Ok(false)
+    }
+
+    fn dispatch_query(&mut self, code: KeyCode) -> io::Result<bool> {
+        match code {
+            KeyCode::Esc => return self.key_esc(),
+
+            KeyCode::Enter => {
+                self.key_enter();
+                return Ok(true);
+            }
+            KeyCode::Char(c) => {
+                self.query.push(c);
+                // a Chinese character takes 3 bytes, however, it only takes 2 cells in most terminals
+                self.query_cursor_col += cmp::min(2, c.len_utf8() as u16);
+            }
+            KeyCode::Backspace => {
+                let ch = self.query.pop();
+                if let Some(c) = ch {
+                    self.query_cursor_col =
+                        self.query_cursor_col - cmp::min(2, c.len_utf8() as u16);
+                }
+            }
+            _ => {}
+        }
         Ok(false)
     }
 }
@@ -53,15 +87,13 @@ impl<T> Menu<T> {
         match self.mode {
             Mode::Normal => Ok(true),
             _ => {
-                self.normal_mode()?;
+                self.enter_normal_mode()?;
                 Ok(false)
             }
         }
     }
 
-    pub(crate) fn normal_mode(&mut self) -> io::Result<()> {
-        self.mode = Mode::Normal;
-        term_exec_stdout!(crossterm::cursor::Hide);
-        Ok(())
+    fn key_enter(&mut self) {
+        self.selected = true;
     }
 }
