@@ -1,4 +1,11 @@
 #[macro_export]
+macro_rules! term_print {
+    ($content:expr) => {
+        term_exec!(crossterm::style::Print($content));
+    };
+}
+
+#[macro_export]
 macro_rules! term_printf {
     ($content:expr, $($arg:tt)*) => {
         term_exec!(crossterm::style::Print(format!($content, $($arg)*)));

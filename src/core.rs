@@ -26,16 +26,17 @@ impl<T> Menu<T> {
     pub fn new() -> io::Result<Menu<T>> {
         let (col, row) = crossterm::cursor::position()?;
         let (_, rows) = crossterm::terminal::size()?;
-        eprintln!("row: {}, col: {}, total_rows: {}", row, col, rows);
         Ok(Menu {
             title: None,
             item_list: Vec::new(),
             mode: Mode::Normal,
             cursor_abs_pos: (row, col),
+            max_row: rows,
             selection_idx: 0,
             selected: false,
             query: String::new(),
             query_cursor_col: 0,
+            scroll_offset: 0,
         })
     }
 
@@ -69,6 +70,9 @@ impl<T> Menu<T> {
         loop {
             let evt = event::read()?;
             if let event::Event::Key(key) = evt {
+                // PERF: sometimes a key event dose not change the state of the menu,
+                // in that case, we can skip the draw step.
+                // for exmaple: keep pressing up key when the first item is selected.
                 if self.dispatch_key(key)? {
                     break;
                 }
@@ -88,21 +92,21 @@ impl<T> Menu<T> {
         let left_rows = max_rows - row;
 
         // check how many items are there
-        let max_items = self.item_list.len() as u16;
+        let item_cnt = self.item_list.len() as u16;
 
         // if there are more rows than items, no need to scroll
-        if max_items <= left_rows {
+        if item_cnt <= left_rows {
             return Ok(());
         }
 
         // if there are more items than rows, scroll up
-        let diff = max_items - left_rows;
-        eprintln!(
-            "diff: {}, cur row: {}, after row: {}",
-            diff,
-            row,
-            row.saturating_sub(diff + 1)
-        );
+        let diff = item_cnt - left_rows;
+        // eprintln!(
+        //     "diff: {}, cur row: {}, after row: {}",
+        //     diff,
+        //     row,
+        //     row.saturating_sub(diff + 1)
+        // );
         term_exec!(crossterm::terminal::ScrollUp(diff.min(max_rows - 1)));
         // we've alreay scrolled up, but the cursor is still at the bottom of the screen
         // just move the cursor up
@@ -119,14 +123,14 @@ impl<T> Menu<T> {
 
         let item = self
             .item_list
-            .get_mut(self.selection_idx as usize)
+            .get_mut((self.selection_idx + self.scroll_offset) as usize)
             .unwrap()
             .take()
             .unwrap();
 
         // print the result to the terminal
         ignore_io_error!({
-            term_printf!("{}: {}", self.get_title(), item.alias);
+            term_printf!("{} {}", self.get_title(), item.alias);
             term_cursor_down!(1);
         });
 

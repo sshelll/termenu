@@ -1,5 +1,5 @@
 use crate::{
-    term_clear_from_cursor_down, term_cursor_col, term_cursor_down, term_cursor_move, term_exec,
+    term_clear_from_cursor_down, term_cursor_down, term_cursor_move, term_exec, term_print,
     term_printf, Menu, Mode,
 };
 use std::io;
@@ -12,6 +12,7 @@ impl<T> Menu<T> {
 
         self.print_options()?;
 
+        // NOTE: print cursor last because it may move the cursor down during the above calls
         self.print_cursor()
     }
 
@@ -41,15 +42,48 @@ impl<T> Menu<T> {
     }
 
     pub(crate) fn print_options(&self) -> io::Result<()> {
-        for (i, item) in self.item_list.iter().enumerate() {
+        let (row, _) = self.cursor_abs_pos;
+        let item_count = self.item_list.len() as u16;
+
+        // print since the scroll offset
+        let mut idx = self.scroll_offset;
+        let mut i = 0;
+        loop {
             term_cursor_down!(1);
-            let alias = &item.as_ref().unwrap().alias;
-            if i == self.selection_idx as usize {
-                term_printf!("> {}", alias);
-            } else {
-                term_printf!("  {}", alias);
+            if idx >= item_count {
+                break;
             }
+            if row + i == self.max_row - 2 {
+                term_print!("---more---");
+                break;
+            }
+            let item = &self.item_list[idx as usize];
+            if let Some(item) = item {
+                if idx == self.selection_idx + self.scroll_offset {
+                    term_printf!("> {}", item.alias);
+                } else {
+                    term_printf!("  {}", item.alias);
+                }
+            }
+            idx += 1;
+            i += 1;
         }
+
+        // for (i, item) in self.item_list.iter().enumerate() {
+        //     term_cursor_down!(1);
+        //     if row + i as u16 == self.max_row - 2 {
+        //         if i < item_count as usize - 1 {
+        //             term_print!("---more---");
+        //         }
+        //         break;
+        //     }
+        //     let alias = &item.as_ref().unwrap().alias;
+        //     if i == self.selection_idx as usize {
+        //         term_printf!("> {}", alias);
+        //     } else {
+        //         term_printf!("  {}", alias);
+        //     }
+        // }
 
         Ok(())
     }
@@ -57,7 +91,7 @@ impl<T> Menu<T> {
     pub(crate) fn get_title_line(&self) -> String {
         let title = self.get_title();
         if let Mode::Query = self.mode {
-            format!("{}: /{}", title, self.query)
+            format!("{} /{}", title, self.query)
         } else {
             title.to_string()
         }

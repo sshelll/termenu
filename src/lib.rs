@@ -24,10 +24,13 @@ pub struct Menu<T> {
 
     // original cursor absolute position (row, col)
     cursor_abs_pos: (u16, u16),
+    max_row: u16,
 
     selection_idx: u16,
     selected: bool,
 
     query: String,
     query_cursor_col: u16,
+
+    scroll_offset: u16,
 }

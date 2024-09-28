@@ -52,6 +52,10 @@ impl<T> Menu<T> {
         match code {
             KeyCode::Esc => return self.key_esc(),
 
+            KeyCode::Up => self.key_up(),
+
+            KeyCode::Down => self.key_down(),
+
             KeyCode::Enter => {
                 self.key_enter();
                 return Ok(true);
@@ -76,11 +80,23 @@ impl<T> Menu<T> {
 
 impl<T> Menu<T> {
     fn key_up(&mut self) {
+        if self.selection_idx == 0 {
+            self.scroll_offset = self.scroll_offset.saturating_sub(1);
+            return;
+        }
         self.selection_idx = self.selection_idx.saturating_sub(1);
     }
 
     fn key_down(&mut self) {
-        self.selection_idx = cmp::min(self.selection_idx + 1, self.item_list.len() as u16 - 1);
+        let item_cnt = self.item_list.len() as u16;
+        if self.selection_idx + self.scroll_offset == item_cnt - 1 {
+            return;
+        }
+        if self.selection_idx == self.max_row - 3 {
+            self.scroll_offset += 1;
+            return;
+        }
+        self.selection_idx += 1;
     }
 
     fn key_esc(&mut self) -> io::Result<bool> {
