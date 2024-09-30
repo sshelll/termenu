@@ -10,5 +10,5 @@ repository = "https://github.com/sshelll/termenu"
 [dependencies]
 crossterm = "0.28"
 colored = "2.1.0"
-fuzzy-matcher = "*"
+fuzzy-matcher = "0.3.7"
 once_cell = "1.19.0"
