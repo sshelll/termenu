@@ -25,14 +25,14 @@ impl<T> Menu<T> {
     /// let mut menu = termenu::Menu::new().unwrap();
     /// ```
     pub fn new() -> io::Result<Menu<T>> {
-        let (col, row) = crossterm::cursor::position()?;
+        let (_, row) = crossterm::cursor::position()?;
         let (_, rows) = crossterm::terminal::size()?;
         Ok(Menu {
             colorscheme: ColorScheme::default(),
             title: None,
             item_list: Vec::new(),
             mode: Mode::Normal,
-            cursor_abs_pos: (row + 1, col),
+            cursor_abs_pos: (row, 0),
             max_row: rows,
             selection_idx: 0,
             selected: false,
@@ -96,11 +96,10 @@ impl<T> Menu<T> {
     // when the cursor is at the bottom of the screen, scroll up to fit the menu
     fn scroll_to_fit(&mut self) -> io::Result<()> {
         // get the size of the terminal
-        let (_, max_rows) = crossterm::terminal::size()?;
         let (row, _) = self.cursor_abs_pos;
 
         // check how many rows are left
-        let left_rows = max_rows - row;
+        let left_rows = self.max_row - row;
 
         // check how many items are there
         let item_cnt = self.item_list.len() as u16;
@@ -111,12 +110,12 @@ impl<T> Menu<T> {
         }
 
         // if there are more items than rows, scroll up
-        let diff = item_cnt - left_rows + 1;
-        term_exec!(crossterm::terminal::ScrollUp(diff.min(max_rows - 1)));
+        let diff = item_cnt - left_rows + 2;
+        term_exec!(crossterm::terminal::ScrollUp(diff.min(self.max_row - 1)));
 
         // we've alreay scrolled up, but the cursor is still at the bottom of the screen
         // just move the cursor up
-        self.cursor_abs_pos = (row.saturating_sub(diff + 1), 0);
+        self.cursor_abs_pos = (row.saturating_sub(diff), 0);
         Ok(())
     }
 
@@ -124,6 +123,10 @@ impl<T> Menu<T> {
         ignore_io_error!(self.clear()?);
 
         if !self.selected {
+            ignore_io_error!({
+                term_printf!("{}", colorize(self.get_title(), &self.colorscheme.title),);
+                term_cursor_down!(1);
+            });
             return None;
         }
 
