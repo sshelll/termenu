@@ -1,7 +1,11 @@
 [package]
+description = "A fzf-like library for terminal applications"
 name = "termenu"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = ["sshelll <shaojiale.gitignore@icloud.com>"]
+repository = "https://github.com/sshelll/termenu"
 
 [dependencies]
 crossterm = "0.28"

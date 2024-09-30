@@ -1,6 +1,4 @@
-use colored::Colorize;
-
-use crate::{macros::*, Menu, Mode};
+use crate::{color::colorize, macros::*, Menu, Mode};
 use std::io;
 
 impl<T> Menu<T> {
@@ -28,14 +26,22 @@ impl<T> Menu<T> {
     }
 
     pub(crate) fn print_title(&self) -> io::Result<()> {
-        term_printf!("{}", self.get_title_line());
+        let mut title = colorize(self.get_title(), &self.colorscheme.title);
+        if let Mode::Query = self.mode {
+            title = format!(
+                "{} /{}",
+                title,
+                colorize(&self.query, &self.colorscheme.query)
+            );
+        }
+        term_printf!("{}", title);
         Ok(())
     }
 
     pub(crate) fn print_cursor(&self) -> io::Result<()> {
         if let Mode::Query = self.mode {
             let (row, _) = self.cursor_abs_pos;
-            term_cursor_move!(row, self.query_cursor_col);
+            term_cursor_move!(row, self.get_query_cursor_col());
         }
         Ok(())
     }
@@ -60,7 +66,7 @@ impl<T> Menu<T> {
 
             // reach the end of the screen
             if row + i == self.max_row - 2 {
-                term_print!("---more---");
+                term_print!(colorize("---more---", &self.colorscheme.more_tag));
                 break;
             }
 
@@ -70,13 +76,14 @@ impl<T> Menu<T> {
                 Mode::Query => self.matched_item_indices[idx as usize],
             };
             let item = &self.item_list[item_idx].as_ref().unwrap();
-            let text = match self.mode {
-                Mode::Normal => item.alias.to_string(),
-                Mode::Query => item.get_colored_alias(),
-            };
+
             if idx == self.selection_idx + self.scroll_offset {
-                term_printf!("> {}", text.yellow());
+                term_printf!("> {}", colorize(&item.alias, &self.colorscheme.chosen_ln));
             } else {
+                let text = match self.mode {
+                    Mode::Normal => item.get_colored_alias_for_normal_mode(&self.colorscheme),
+                    Mode::Query => item.get_colored_alias_for_query_mode(&self.colorscheme),
+                };
                 term_printf!("  {}", text);
             }
 
@@ -85,14 +92,5 @@ impl<T> Menu<T> {
         }
 
         Ok(())
-    }
-
-    pub(crate) fn get_title_line(&self) -> String {
-        let title = self.get_title();
-        if let Mode::Query = self.mode {
-            format!("{} /{}", title, self.query)
-        } else {
-            title.to_string()
-        }
     }
 }

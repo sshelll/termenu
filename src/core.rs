@@ -1,9 +1,9 @@
 use std::io::{self};
 
-use colored::Colorize;
 use crossterm::{event, terminal};
+use once_cell::sync::OnceCell;
 
-use crate::{macros::*, Item, Menu, Mode};
+use crate::{color::colorize, macros::*, ColorScheme, Item, Menu, Mode};
 
 impl<T> Item<T> {
     pub fn new(display: &str, value: T) -> Item<T> {
@@ -14,34 +14,21 @@ impl<T> Item<T> {
             matched_indices: None,
         }
     }
-
-    pub(crate) fn get_colored_alias(&self) -> String {
-        if self.matched_indices.is_none() || self.matched_indices.as_ref().unwrap().is_empty() {
-            return self.alias.to_string();
-        }
-        let mut display = String::new();
-        if let Some(indices) = self.matched_indices.as_ref() {
-            let mut last = 0;
-            for idx in indices.iter() {
-                display.push_str(&self.alias[last..*idx]);
-                let ch = &self.alias[*idx..=*idx].yellow().to_string();
-                display.push_str(ch);
-                last = idx + 1;
-            }
-            display.push_str(&self.alias[last..]);
-        } else {
-            display.push_str(&self.alias);
-        }
-        display
-    }
 }
 
 // constructor
 impl<T> Menu<T> {
+    /// Create a new menu instance
+    ///
+    /// # Example
+    /// ```no_run
+    /// let mut menu = termenu::Menu::new().unwrap();
+    /// ```
     pub fn new() -> io::Result<Menu<T>> {
         let (col, row) = crossterm::cursor::position()?;
         let (_, rows) = crossterm::terminal::size()?;
         Ok(Menu {
+            colorscheme: ColorScheme::default(),
             title: None,
             item_list: Vec::new(),
             mode: Mode::Normal,
@@ -49,14 +36,15 @@ impl<T> Menu<T> {
             max_row: rows,
             selection_idx: 0,
             selected: false,
+            fuzzy_matcher: OnceCell::new(),
             query: String::new(),
-            query_cursor_col: 0,
-            insert_pos: 0,
+            insert_idx: 0,
             scroll_offset: 0,
             matched_item_indices: Vec::new(),
         })
     }
 
+    /// Set the title of the menu, which will be displayed at the top of the menu
     pub fn set_title(&mut self, t: &str) -> &mut Self {
         self.title = Some(t.to_string());
         self
@@ -79,7 +67,13 @@ impl<T> Menu<T> {
 
 // select api
 impl<T> Menu<T> {
+    /// Start the menu and return the selection
+    /// if the user presses `esc` or `ctrl-c`, `None` will be returned
+    /// otherwise, the selected item will be returned
     pub fn select(&mut self) -> io::Result<Option<Item<T>>> {
+        if self.item_list.is_empty() {
+            return Ok(None);
+        }
         terminal::enable_raw_mode()?;
         self.scroll_to_fit()?;
         self.enter_normal_mode()?;
@@ -87,19 +81,19 @@ impl<T> Menu<T> {
         loop {
             let evt = event::read()?;
             if let event::Event::Key(key) = evt {
-                // PERF: sometimes a key event dose not change the state of the menu,
-                // in that case, we can skip the draw step.
-                // for exmaple: keep pressing up key when the first item is selected.
-                if self.dispatch_key(key)? {
+                let resp = self.dispatch_key(key)?;
+                if resp.exit() {
                     break;
                 }
-                self.draw()?;
+                if resp.redraw() {
+                    self.draw()?;
+                }
             }
         }
         Ok(self.get_selection())
     }
 
-    // when the terminal is at the bottom of the screen, scroll up to fit the menu
+    // when the cursor is at the bottom of the screen, scroll up to fit the menu
     fn scroll_to_fit(&mut self) -> io::Result<()> {
         // get the size of the terminal
         let (_, max_rows) = crossterm::terminal::size()?;
@@ -117,14 +111,9 @@ impl<T> Menu<T> {
         }
 
         // if there are more items than rows, scroll up
-        let diff = item_cnt - left_rows;
-        // eprintln!(
-        //     "diff: {}, cur row: {}, after row: {}",
-        //     diff,
-        //     row,
-        //     row.saturating_sub(diff + 1)
-        // );
+        let diff = item_cnt - left_rows + 1;
         term_exec!(crossterm::terminal::ScrollUp(diff.min(max_rows - 1)));
+
         // we've alreay scrolled up, but the cursor is still at the bottom of the screen
         // just move the cursor up
         self.cursor_abs_pos = (row.saturating_sub(diff + 1), 0);
@@ -149,7 +138,11 @@ impl<T> Menu<T> {
 
         // print the result to the terminal
         ignore_io_error!({
-            term_printf!("{} {}", self.get_title(), item.alias);
+            term_printf!(
+                "{} {}",
+                colorize(self.get_title(), &self.colorscheme.title),
+                item.alias
+            );
             term_cursor_down!(1);
         });
 

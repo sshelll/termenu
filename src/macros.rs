@@ -73,7 +73,6 @@ macro_rules! prev_boundary {
         }
     }};
 }
-pub(crate) use prev_boundary;
 
 macro_rules! next_boundary {
     ($s:expr, $pos:expr) => {{
@@ -84,4 +83,17 @@ macro_rules! next_boundary {
         pos
     }};
 }
-pub(crate) use next_boundary;
+
+macro_rules! get_insert_pos {
+    ($s:expr, $idx:expr) => {{
+        let mut insert_pos = 0;
+        for (i, c) in $s.chars().enumerate() {
+            if i == $idx {
+                break;
+            }
+            insert_pos += c.len_utf8();
+        }
+        insert_pos
+    }};
+}
+pub(crate) use get_insert_pos;
