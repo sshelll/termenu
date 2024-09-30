@@ -8,7 +8,7 @@ macro_rules! quit_now {
 }
 
 fn main() {
-    let mut menu = termenu::Menu::new().unwrap_or_else(|e| {
+    let mut menu = Menu::new().unwrap_or_else(|e| {
         quit_now!("Error: {}", e);
     });
 
