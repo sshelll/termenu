@@ -14,7 +14,7 @@ fn main() {
 
     // build item list
     let mut item_list = Vec::new();
-    for i in 1..=1000 {
+    for i in 1..=100 {
         item_list.push(Item::new(format!("{}th item", i).as_str(), i));
     }
 

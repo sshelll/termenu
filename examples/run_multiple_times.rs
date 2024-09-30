@@ -1,25 +1,11 @@
-# Termenu
-> fzf-like terminal ui api for rust
-
-## Demo
-![demo](https://github.com/sshelll/assets/blob/master/termenu/termenu.jpg?raw=true)
-
-## Examples
-
-check examples folder
-
-```bash
-# basic example
-cargo run --example basic
-
-# complex example
-cargo run --example complex
-```
-
-## Basic Usage
-
-```rust
 fn main() {
+    run_once();
+    run_once();
+    run_once();
+}
+
+fn run_once() {
+    println!("[start running once]");
     let mut menu = termenu::Menu::new().unwrap();
     let mut item_list = Vec::new();
     for i in 1..=10 {
@@ -34,7 +20,3 @@ fn main() {
         println!("You selected: {}", selection.value);
     }
 }
-```
-
-## NOTE
-- Currently, termenu does not support window resizing.

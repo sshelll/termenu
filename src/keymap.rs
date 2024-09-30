@@ -134,7 +134,8 @@ impl<T> Menu<T> {
         if self.selection_idx + self.scroll_offset == item_cnt - 1 {
             return Ok(KeyResponse(false, false));
         }
-        if self.selection_idx == self.max_row - 3 {
+        let (row, _) = self.cursor_abs_pos;
+        if self.selection_idx + row == self.max_row - 3 {
             self.scroll_offset += 1;
             return Ok(KeyResponse(false, true));
         }

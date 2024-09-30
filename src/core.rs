@@ -32,7 +32,7 @@ impl<T> Menu<T> {
             title: None,
             item_list: Vec::new(),
             mode: Mode::Normal,
-            cursor_abs_pos: (row, col),
+            cursor_abs_pos: (row + 1, col),
             max_row: rows,
             selection_idx: 0,
             selected: false,
@@ -106,7 +106,7 @@ impl<T> Menu<T> {
         let item_cnt = self.item_list.len() as u16;
 
         // if there are more rows than items, no need to scroll
-        if item_cnt <= left_rows {
+        if item_cnt < left_rows {
             return Ok(());
         }
 
