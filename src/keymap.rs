@@ -2,7 +2,10 @@ use std::{cmp, io};
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use crate::{Menu, Mode};
+use crate::{
+    macros::{next_boundary, prev_boundary},
+    Menu, Mode,
+};
 
 impl<T> Menu<T> {
     /// Dispatch a key event.
@@ -56,20 +59,61 @@ impl<T> Menu<T> {
 
             KeyCode::Down => self.key_down(),
 
+            KeyCode::Left => {
+                if self.insert_pos > 0 {
+                    let pos = prev_boundary!(&self.query, self.insert_pos);
+                    let c = self.query.remove(pos);
+                    self.insert_pos -= c.len_utf8();
+                    self.query.insert(self.insert_pos, c);
+                    self.query_cursor_col -= cmp::min(2, c.len_utf8() as u16);
+                }
+            }
+
+            KeyCode::Right => {
+                let last_pos = prev_boundary!(self.query, self.query.len());
+                match self.insert_pos {
+                    pos if pos < last_pos => {
+                        let pos = next_boundary!(self.query, self.insert_pos);
+                        let c = self.query.remove(pos);
+                        self.insert_pos += c.len_utf8();
+                        self.query.insert(self.insert_pos, c);
+                        self.query_cursor_col += cmp::min(2, c.len_utf8() as u16);
+                    }
+                    _ => {
+                        let ch = self.query.pop();
+                        if let Some(c) = ch {
+                            self.query.push(c);
+                            let max_query_cursor_col = self.get_title_line().len() as u16;
+                            if self.query_cursor_col < max_query_cursor_col {
+                                self.query_cursor_col += cmp::min(2, c.len_utf8() as u16);
+                            }
+                        }
+                    }
+                }
+            }
+
             KeyCode::Enter => {
                 self.key_enter();
                 return Ok(true);
             }
+
             KeyCode::Char(c) => {
-                self.query.push(c);
+                self.query.insert(self.insert_pos, c);
+                self.insert_pos += c.len_utf8();
                 // a Chinese character takes 3 bytes, however, it only takes 2 cells in most terminals
                 self.query_cursor_col += cmp::min(2, c.len_utf8() as u16);
+                self.fuzzy_match();
             }
+
             KeyCode::Backspace => {
-                let ch = self.query.pop();
-                if let Some(c) = ch {
-                    self.query_cursor_col =
-                        self.query_cursor_col - cmp::min(2, c.len_utf8() as u16);
+                if !self.query.is_empty() {
+                    let pos = prev_boundary!(&self.query, self.insert_pos);
+                    let c = self.query.remove(pos);
+                    if self.insert_pos > 0 {
+                        self.insert_pos -= c.len_utf8();
+                        self.query_cursor_col -= cmp::min(2, c.len_utf8() as u16);
+                    }
+                    self.fuzzy_match();
                 }
             }
             _ => {}

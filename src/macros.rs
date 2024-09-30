@@ -58,3 +58,30 @@ macro_rules! ignore_io_error {
     };
 }
 pub(crate) use ignore_io_error;
+
+/// search leftward from the given position to find the previous char boundary
+macro_rules! prev_boundary {
+    ($s:expr, $pos:expr) => {{
+        if $pos == 0 {
+            0
+        } else {
+            let mut pos = $pos - 1;
+            while !$s.is_char_boundary(pos) {
+                pos -= 1;
+            }
+            pos
+        }
+    }};
+}
+pub(crate) use prev_boundary;
+
+macro_rules! next_boundary {
+    ($s:expr, $pos:expr) => {{
+        let mut pos = $pos + 1;
+        while !$s.is_char_boundary(pos) {
+            pos += 1;
+        }
+        pos
+    }};
+}
+pub(crate) use next_boundary;

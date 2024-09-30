@@ -1,3 +1,5 @@
+use colored::Colorize;
+
 use crate::{macros::*, Menu, Mode};
 use std::io;
 
@@ -40,47 +42,47 @@ impl<T> Menu<T> {
 
     pub(crate) fn print_options(&self) -> io::Result<()> {
         let (row, _) = self.cursor_abs_pos;
-        let item_count = self.item_list.len() as u16;
+        let item_count = match self.mode {
+            Mode::Normal => self.item_list.len(),
+            Mode::Query => self.matched_item_indices.len(),
+        } as u16;
 
         // print since the scroll offset
         let mut idx = self.scroll_offset;
         let mut i = 0;
         loop {
             term_cursor_down!(1);
+
+            // reached the end of the list
             if idx >= item_count {
                 break;
             }
+
+            // reach the end of the screen
             if row + i == self.max_row - 2 {
                 term_print!("---more---");
                 break;
             }
-            let item = &self.item_list[idx as usize];
-            if let Some(item) = item {
-                if idx == self.selection_idx + self.scroll_offset {
-                    term_printf!("> {}", item.alias);
-                } else {
-                    term_printf!("  {}", item.alias);
-                }
+
+            // print
+            let item_idx = match self.mode {
+                Mode::Normal => idx as usize,
+                Mode::Query => self.matched_item_indices[idx as usize],
+            };
+            let item = &self.item_list[item_idx].as_ref().unwrap();
+            let text = match self.mode {
+                Mode::Normal => item.alias.to_string(),
+                Mode::Query => item.get_colored_alias(),
+            };
+            if idx == self.selection_idx + self.scroll_offset {
+                term_printf!("> {}", text.yellow());
+            } else {
+                term_printf!("  {}", text);
             }
+
             idx += 1;
             i += 1;
         }
-
-        // for (i, item) in self.item_list.iter().enumerate() {
-        //     term_cursor_down!(1);
-        //     if row + i as u16 == self.max_row - 2 {
-        //         if i < item_count as usize - 1 {
-        //             term_print!("---more---");
-        //         }
-        //         break;
-        //     }
-        //     let alias = &item.as_ref().unwrap().alias;
-        //     if i == self.selection_idx as usize {
-        //         term_printf!("> {}", alias);
-        //     } else {
-        //         term_printf!("  {}", alias);
-        //     }
-        // }
 
         Ok(())
     }

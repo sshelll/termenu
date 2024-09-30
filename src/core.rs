@@ -1,5 +1,6 @@
 use std::io::{self};
 
+use colored::Colorize;
 use crossterm::{event, terminal};
 
 use crate::{macros::*, Item, Menu, Mode};
@@ -9,13 +10,29 @@ impl<T> Item<T> {
         Item {
             alias: display.to_string(),
             value,
+            score: None,
+            matched_indices: None,
         }
     }
-}
 
-impl<T> Default for Menu<T> {
-    fn default() -> Self {
-        Self::new().unwrap()
+    pub(crate) fn get_colored_alias(&self) -> String {
+        if self.matched_indices.is_none() || self.matched_indices.as_ref().unwrap().is_empty() {
+            return self.alias.to_string();
+        }
+        let mut display = String::new();
+        if let Some(indices) = self.matched_indices.as_ref() {
+            let mut last = 0;
+            for idx in indices.iter() {
+                display.push_str(&self.alias[last..*idx]);
+                let ch = &self.alias[*idx..=*idx].yellow().to_string();
+                display.push_str(ch);
+                last = idx + 1;
+            }
+            display.push_str(&self.alias[last..]);
+        } else {
+            display.push_str(&self.alias);
+        }
+        display
     }
 }
 
@@ -34,7 +51,9 @@ impl<T> Menu<T> {
             selected: false,
             query: String::new(),
             query_cursor_col: 0,
+            insert_pos: 0,
             scroll_offset: 0,
+            matched_item_indices: Vec::new(),
         })
     }
 
@@ -119,12 +138,14 @@ impl<T> Menu<T> {
             return None;
         }
 
-        let item = self
-            .item_list
-            .get_mut((self.selection_idx + self.scroll_offset) as usize)
-            .unwrap()
-            .take()
-            .unwrap();
+        let item_idx = match self.mode {
+            Mode::Normal => (self.selection_idx + self.scroll_offset) as usize,
+            Mode::Query => {
+                self.matched_item_indices[(self.selection_idx + self.scroll_offset) as usize]
+            }
+        };
+
+        let item = self.item_list.get_mut(item_idx).unwrap().take().unwrap();
 
         // print the result to the terminal
         ignore_io_error!({

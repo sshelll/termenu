@@ -6,3 +6,5 @@ edition = "2021"
 [dependencies]
 crossterm = "0.28"
 colored = "2.1.0"
+fuzzy-matcher = "*"
+once_cell = "1.19.0"
