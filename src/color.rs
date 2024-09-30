@@ -53,22 +53,39 @@ impl<T> Item<T> {
     }
 
     pub(crate) fn get_colored_alias_for_query_mode(&self, colorscheme: &ColorScheme) -> String {
+        // no matched indices
         if self.matched_indices.is_none() || self.matched_indices.as_ref().unwrap().is_empty() {
             return colorize(&self.alias, &colorscheme.items);
         }
+
         let mut display = String::new();
-        if let Some(indices) = self.matched_indices.as_ref() {
-            let mut last = 0;
-            for idx in indices.iter() {
-                display.push_str(&self.alias[last..*idx]);
-                let ch = colorize(&self.alias[*idx..=*idx], &colorscheme.matched);
-                display.push_str(&ch);
-                last = idx + 1;
-            }
-            display.push_str(&self.alias[last..]);
-        } else {
-            display.push_str(&self.alias);
+
+        let indices = self.matched_indices.as_ref().unwrap();
+
+        let alias_chars: Vec<char> = self.alias.chars().collect();
+        let len = alias_chars.len();
+        let mut left = 0;
+
+        for &idx in indices.iter() {
+            // handle left part
+            let prefix: String = alias_chars[left..idx].iter().collect();
+            display.push_str(&prefix);
+
+            // handle current char
+            let cur_char: String = alias_chars[idx..=idx].iter().collect();
+            let ch = colorize(&cur_char, &colorscheme.matched);
+            display.push_str(&ch);
+
+            // update left
+            left = idx + 1;
         }
+
+        // handle the rest
+        if left < len {
+            let rest: String = alias_chars[left..].iter().collect();
+            display.push_str(&rest);
+        }
+
         display
     }
 }
