@@ -40,8 +40,21 @@ impl<T> Menu<T> {
             query: String::new(),
             insert_idx: 0,
             scroll_offset: 0,
+            display_cnt: 0,
             matched_item_indices: Vec::new(),
         })
+    }
+
+    /// Set the max height of the menu, should be a percentage in range (0, 1], otherwise it will
+    /// be ignored
+    pub fn set_max_height(&mut self, percent: f32) -> &mut Self {
+        if percent <= 0.0 || percent > 1.0 {
+            return self;
+        }
+        let (row, _) = self.cursor_abs_pos;
+        self.display_cnt = (self.max_row as f32 * percent) as u16;
+        self.max_row = self.max_row.min(self.display_cnt + row + 1);
+        self
     }
 
     /// Set the title of the menu, which will be displayed at the top of the menu
@@ -56,11 +69,13 @@ impl<T> Menu<T> {
 
     pub fn add(&mut self, item: Item<T>) -> &mut Self {
         self.item_list.push(Some(item));
+        self.display_cnt += 1;
         self
     }
 
     pub fn add_list(&mut self, items: Vec<Item<T>>) -> &mut Self {
         self.item_list.extend(items.into_iter().map(Some));
+        self.display_cnt += self.item_list.len() as u16;
         self
     }
 }
@@ -102,7 +117,8 @@ impl<T> Menu<T> {
         let left_rows = self.max_row - row;
 
         // check how many items are there
-        let item_cnt = self.item_list.len() as u16;
+        // let item_cnt = self.item_list.len() as u16;
+        let item_cnt = self.display_cnt;
 
         // if there are more rows than items, no need to scroll
         if item_cnt < left_rows {

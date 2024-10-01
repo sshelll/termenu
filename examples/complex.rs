@@ -48,6 +48,7 @@ fn main() {
         .set_title("test selection:")
         .add_list(item_list)
         .set_colorscheme(colorscheme)
+        .set_max_height(1.2)
         .select() // this is the menu entry
         .unwrap_or_else(|e| {
             quit_now!("Error: {}", e);
