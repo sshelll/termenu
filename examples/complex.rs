@@ -46,9 +46,9 @@ fn main() {
     // run
     let selection = menu
         .set_title("test selection:")
-        .add_list(item_list)
+        .set_max_height(0.3)
         .set_colorscheme(colorscheme)
-        .set_max_height(1.2)
+        .add_list(item_list)
         .select() // this is the menu entry
         .unwrap_or_else(|e| {
             quit_now!("Error: {}", e);

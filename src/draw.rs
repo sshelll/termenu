@@ -56,6 +56,7 @@ impl<T> Menu<T> {
         // print since the scroll offset
         let mut idx = self.scroll_offset;
         let mut i = 0;
+        let mut has_more = false;
         loop {
             term_cursor_down!(1);
 
@@ -66,6 +67,7 @@ impl<T> Menu<T> {
 
             // reach the end of the screen
             if row + i == self.max_row - 2 {
+                has_more = true;
                 term_print!(colorize("---more---", &self.colorscheme.more_tag));
                 break;
             }
@@ -89,6 +91,10 @@ impl<T> Menu<T> {
 
             idx += 1;
             i += 1;
+        }
+
+        if !has_more {
+            term_print!(colorize("---end---", &self.colorscheme.more_tag));
         }
 
         Ok(())

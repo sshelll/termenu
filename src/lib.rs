@@ -89,7 +89,7 @@ pub struct Menu<T> {
     insert_idx: usize,
 
     scroll_offset: u16,
-    display_cnt: u16,
+    max_height_percent: f32,
 }
 
 #[derive(Clone, Copy)]

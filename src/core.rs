@@ -1,3 +1,4 @@
+use core::panic;
 use std::io::{self};
 
 use crossterm::{event, terminal};
@@ -40,7 +41,7 @@ impl<T> Menu<T> {
             query: String::new(),
             insert_idx: 0,
             scroll_offset: 0,
-            display_cnt: 0,
+            max_height_percent: 1.0,
             matched_item_indices: Vec::new(),
         })
     }
@@ -52,8 +53,9 @@ impl<T> Menu<T> {
             return self;
         }
         let (row, _) = self.cursor_abs_pos;
-        self.display_cnt = (self.max_row as f32 * percent) as u16;
-        self.max_row = self.max_row.min(self.display_cnt + row + 1);
+        let display_cnt = (self.max_row as f32 * percent) as u16;
+        self.max_height_percent = percent;
+        self.max_row = self.max_row.min(display_cnt + row + 1);
         self
     }
 
@@ -69,13 +71,11 @@ impl<T> Menu<T> {
 
     pub fn add(&mut self, item: Item<T>) -> &mut Self {
         self.item_list.push(Some(item));
-        self.display_cnt += 1;
         self
     }
 
     pub fn add_list(&mut self, items: Vec<Item<T>>) -> &mut Self {
         self.item_list.extend(items.into_iter().map(Some));
-        self.display_cnt += self.item_list.len() as u16;
         self
     }
 }
@@ -114,14 +114,18 @@ impl<T> Menu<T> {
         let (row, _) = self.cursor_abs_pos;
 
         // check how many rows are left
-        let left_rows = self.max_row - row;
+        let (_, term_max_row) = crossterm::terminal::size()?;
+        let left_rows = term_max_row - row;
 
         // check how many items are there
-        // let item_cnt = self.item_list.len() as u16;
-        let item_cnt = self.display_cnt;
+        let item_cnt =
+            self.item_list
+                .len()
+                .min((self.max_row as f32 * self.max_height_percent) as usize) as u16;
 
         // if there are more rows than items, no need to scroll
-        if item_cnt < left_rows {
+        // plus 2 is for the title and the more tag
+        if item_cnt + 2 < left_rows {
             return Ok(());
         }
 
