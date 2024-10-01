@@ -141,6 +141,10 @@ impl FontStyle {
         self.bg_color_256 = Some(color);
         self
     }
+
+    pub fn build(&mut self) -> Self {
+        *self
+    }
 }
 
 impl ColorScheme {

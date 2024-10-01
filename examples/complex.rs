@@ -24,18 +24,24 @@ fn main() {
     let mut colorscheme = termenu::ColorScheme::default();
     colorscheme
         .set_title_style(
-            *FontStyle::default()
+            FontStyle::default()
                 .set_shape(FontShape::Bold | FontShape::Underline)
-                .set_fg_color(colored::Color::Green),
+                .set_fg_color(colored::Color::Green)
+                .build(),
         )
-        .set_query_style(*FontStyle::default().set_shape(FontShape::Italic))
+        .set_query_style(FontStyle::default().set_shape(FontShape::Italic).build())
         .set_chosen_ln_style(
-            *FontStyle::default()
+            FontStyle::default()
                 .set_shape(FontShape::Underline)
                 .set_fg_color(colored::Color::Black)
-                .set_bg_color_256((215, 255, 0)),
+                .set_bg_color_256((215, 255, 0))
+                .build(),
         )
-        .set_more_tag_style(*FontStyle::default().set_fg_color(colored::Color::Magenta));
+        .set_more_tag_style(
+            FontStyle::default()
+                .set_fg_color(colored::Color::Magenta)
+                .build(),
+        );
 
     // run
     let selection = menu
