@@ -77,7 +77,7 @@ impl<T> Menu<T> {
                 Mode::Normal => idx as usize,
                 Mode::Query => self.matched_item_indices[idx as usize],
             };
-            let item = &self.item_list[item_idx].as_ref().unwrap();
+            let item = &self.item_list[item_idx];
 
             if idx == self.selection_idx + self.scroll_offset {
                 term_printf!("> {}", colorize(&item.alias, &self.colorscheme.chosen_ln));

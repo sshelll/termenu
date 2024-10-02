@@ -76,12 +76,12 @@ impl<T> Menu<T> {
     }
 
     pub fn add(&mut self, item: Item<T>) -> &mut Self {
-        self.item_list.push(Some(item));
+        self.item_list.push(item);
         self
     }
 
     pub fn add_list(&mut self, items: Vec<Item<T>>) -> &mut Self {
-        self.item_list.extend(items.into_iter().map(Some));
+        self.item_list.extend(items);
         self
     }
 }
@@ -91,7 +91,7 @@ impl<T> Menu<T> {
     /// Start the menu and return the selection
     /// if the user presses `esc` or `ctrl-c`, `None` will be returned
     /// otherwise, the selected item will be returned
-    pub fn select(&mut self) -> io::Result<Option<T>> {
+    pub fn select(&mut self) -> io::Result<Option<&T>> {
         if self.item_list.is_empty() {
             return Ok(None);
         }
@@ -145,7 +145,7 @@ impl<T> Menu<T> {
         Ok(())
     }
 
-    fn get_selection(&mut self) -> Option<T> {
+    fn get_selection(&mut self) -> Option<&T> {
         ignore_io_error!(self.clear()?);
 
         if !self.selected {
@@ -163,7 +163,7 @@ impl<T> Menu<T> {
             }
         };
 
-        let item = self.item_list.get_mut(item_idx).unwrap().take().unwrap();
+        let item = self.item_list.get(item_idx).unwrap();
 
         // print the result to the terminal
         ignore_io_error!({
@@ -175,7 +175,7 @@ impl<T> Menu<T> {
             term_cursor_down!(1);
         });
 
-        Some(item.value)
+        Some(&item.value)
     }
 }
 

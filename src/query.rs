@@ -12,7 +12,6 @@ impl<T> Menu<T> {
         // match
         let matcher = self.fuzzy_matcher.get_or_init(SkimMatcherV2::default);
         for (i, item) in self.item_list.iter_mut().enumerate() {
-            let item = item.as_mut().unwrap();
             match matcher.fuzzy_indices(&item.alias, &self.query) {
                 None => continue,
                 Some((score, indices)) => {
@@ -28,8 +27,8 @@ impl<T> Menu<T> {
 
         // reverse sort by score
         self.matched_item_indices.sort_by(|a, b| {
-            let a = self.item_list[*a].as_ref().unwrap().score.unwrap();
-            let b = self.item_list[*b].as_ref().unwrap().score.unwrap();
+            let a = self.item_list[*a].score;
+            let b = self.item_list[*b].score;
             b.cmp(&a)
         });
     }

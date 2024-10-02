@@ -71,7 +71,7 @@ pub struct Menu<T> {
     title: Option<String>,
 
     // use option just for take ownership of item, it'll never be None
-    item_list: Vec<Option<Item<T>>>,
+    item_list: Vec<Item<T>>,
 
     mode: Mode,
 
