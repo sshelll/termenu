@@ -129,7 +129,7 @@ impl<T> Menu<T> {
         }
 
         // if there are more items than rows, scroll up
-        let diff = item_cnt - left_rows + 2;
+        let diff = item_cnt + 2 - left_rows;
         term_exec!(crossterm::terminal::ScrollUp(diff.min(self.max_row - 1)));
 
         // we've alreay scrolled up, but the cursor is still at the bottom of the screen

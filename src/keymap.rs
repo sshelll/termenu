@@ -58,10 +58,7 @@ impl<T> Menu<T> {
 
             KeyCode::Esc => return self.key_esc(),
 
-            KeyCode::Enter => {
-                self.key_enter();
-                return Ok(KeyResponse::new(true, false));
-            }
+            KeyCode::Enter => return self.key_enter(),
 
             KeyCode::Char('/') => {
                 self.enter_query_mode()?;
@@ -87,10 +84,7 @@ impl<T> Menu<T> {
                 self.insert_idx = cmp::min(self.insert_idx + 1, self.query.len());
             }
 
-            KeyCode::Enter => {
-                self.key_enter();
-                return Ok(KeyResponse(true, false));
-            }
+            KeyCode::Enter => return self.key_enter(),
 
             KeyCode::Char(c) => {
                 let insert_pos = get_insert_pos!(&self.query, self.insert_idx);
@@ -153,8 +147,18 @@ impl<T> Menu<T> {
         }
     }
 
-    fn key_enter(&mut self) {
-        self.selected = true;
+    fn key_enter(&mut self) -> io::Result<KeyResponse> {
+        match self.mode {
+            Mode::Normal => {
+                self.selected = true;
+            }
+            Mode::Query => {
+                if !self.matched_item_indices.is_empty() {
+                    self.selected = true;
+                }
+            }
+        }
+        Ok(KeyResponse(true, false))
     }
 }
 
