@@ -56,7 +56,7 @@ fn main() {
 
     // handle selection
     if let Some(selection) = selection {
-        println!("You selected: {}", selection.value);
+        println!("You selected: {}", selection);
     } else {
         println!("You didn't select anything");
     }

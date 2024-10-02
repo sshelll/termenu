@@ -13,6 +13,6 @@ fn main() {
         .select()
         .unwrap();
     if let Some(selection) = selection {
-        println!("You selected: {}", selection.value);
+        println!("You selected: {}", selection);
     }
 }

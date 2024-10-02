@@ -84,7 +84,7 @@ impl<T> Menu<T> {
     /// Start the menu and return the selection
     /// if the user presses `esc` or `ctrl-c`, `None` will be returned
     /// otherwise, the selected item will be returned
-    pub fn select(&mut self) -> io::Result<Option<Item<T>>> {
+    pub fn select(&mut self) -> io::Result<Option<T>> {
         if self.item_list.is_empty() {
             return Ok(None);
         }
@@ -138,7 +138,7 @@ impl<T> Menu<T> {
         Ok(())
     }
 
-    fn get_selection(&mut self) -> Option<Item<T>> {
+    fn get_selection(&mut self) -> Option<T> {
         ignore_io_error!(self.clear()?);
 
         if !self.selected {
@@ -168,7 +168,7 @@ impl<T> Menu<T> {
             term_cursor_down!(1);
         });
 
-        Some(item)
+        Some(item.value)
     }
 }
 
