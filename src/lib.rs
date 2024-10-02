@@ -90,6 +90,8 @@ pub struct Menu<T> {
 
     scroll_offset: u16,
     max_height_percent: f32,
+
+    show_end_tag: bool,
 }
 
 #[derive(Clone, Copy)]

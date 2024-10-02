@@ -42,7 +42,14 @@ impl<T> Menu<T> {
             scroll_offset: 0,
             max_height_percent: 1.0,
             matched_item_indices: Vec::new(),
+            show_end_tag: true,
         })
+    }
+
+    /// Set if show the '---end---' tag at the end of the menu
+    pub fn show_end_tag(&mut self, b: bool) -> &mut Self {
+        self.show_end_tag = b;
+        self
     }
 
     /// Set the max height of the menu, should be a percentage in range (0, 1], otherwise it will

@@ -46,6 +46,7 @@ fn main() {
     // run
     let selection = menu
         .set_title("test selection:")
+        .show_end_tag(false)
         .set_max_height(0.3)
         .set_colorscheme(colorscheme)
         .add_list(item_list)

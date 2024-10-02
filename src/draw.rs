@@ -93,7 +93,7 @@ impl<T> Menu<T> {
             i += 1;
         }
 
-        if !has_more {
+        if !has_more && self.show_end_tag {
             term_print!(colorize("---end---", &self.colorscheme.more_tag));
         }
 
