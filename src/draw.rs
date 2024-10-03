@@ -1,7 +1,7 @@
 use crate::{color::colorize, macros::*, Menu, Mode};
 use std::io;
 
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     pub(crate) fn draw(&self) -> io::Result<()> {
         self.clear()?;
 

@@ -5,7 +5,7 @@ use once_cell::sync::OnceCell;
 
 use crate::{color::colorize, macros::*, ColorScheme, Item, Menu, Mode};
 
-impl<T> Item<T> {
+impl<T: Send + Sync> Item<T> {
     pub fn new(display: &str, value: T) -> Item<T> {
         Item {
             alias: display.to_string(),
@@ -17,7 +17,7 @@ impl<T> Item<T> {
 }
 
 // constructor
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     /// Create a new menu instance
     ///
     /// # Example
@@ -43,6 +43,7 @@ impl<T> Menu<T> {
             max_height_percent: 1.0,
             matched_item_indices: Vec::new(),
             show_end_tag: true,
+            rayon_pool: OnceCell::new(),
         })
     }
 
@@ -87,7 +88,7 @@ impl<T> Menu<T> {
 }
 
 // select api
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     /// Start the menu and return the selection
     /// if the user presses `esc` or `ctrl-c`, `None` will be returned
     /// otherwise, the selected item will be returned
@@ -179,7 +180,7 @@ impl<T> Menu<T> {
     }
 }
 
-impl<T> Drop for Menu<T> {
+impl<T: Send + Sync> Drop for Menu<T> {
     fn drop(&mut self) {
         ignore_io_error!({
             term_cursor_col!(0);

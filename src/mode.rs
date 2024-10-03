@@ -2,7 +2,7 @@ use std::io;
 
 use crate::{macros::*, Menu, Mode};
 
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     pub(crate) fn enter_normal_mode(&mut self) -> io::Result<()> {
         self.mode = Mode::Normal;
         self.matched_item_indices.clear();

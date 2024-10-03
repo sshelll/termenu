@@ -52,7 +52,10 @@ mod macros;
 /// item in the menu
 ///
 /// You can only store the same type of value in the menu
-pub struct Item<T> {
+pub struct Item<T>
+where
+    T: Send + Sync,
+{
     alias: String,
     pub value: T,
     pub(crate) score: Option<i64>,
@@ -65,7 +68,10 @@ enum Mode {
 }
 
 /// the menu itself
-pub struct Menu<T> {
+pub struct Menu<T>
+where
+    T: Send + Sync,
+{
     colorscheme: ColorScheme,
 
     title: Option<String>,
@@ -92,6 +98,8 @@ pub struct Menu<T> {
     max_height_percent: f32,
 
     show_end_tag: bool,
+
+    rayon_pool: OnceCell<rayon::ThreadPool>,
 }
 
 #[derive(Clone, Copy)]

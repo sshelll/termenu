@@ -20,7 +20,7 @@ impl KeyResponse {
     }
 }
 
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     pub(crate) fn dispatch_key(&mut self, key: KeyEvent) -> io::Result<KeyResponse> {
         match key.modifiers {
             KeyModifiers::NONE => self.dispatch_code(key.code),
@@ -107,7 +107,7 @@ impl<T> Menu<T> {
     }
 }
 
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     fn key_up(&mut self) -> io::Result<KeyResponse> {
         if self.selection_idx == 0 {
             if self.scroll_offset == 0 {
@@ -162,7 +162,7 @@ impl<T> Menu<T> {
     }
 }
 
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     pub(crate) fn get_query_cursor_col(&self) -> u16 {
         let mut col = 0;
 

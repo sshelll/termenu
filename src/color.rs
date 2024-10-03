@@ -40,14 +40,14 @@ pub(crate) fn colorize(s: &str, style: &FontStyle) -> String {
     colored
 }
 
-impl<T> Menu<T> {
+impl<T: Send + Sync> Menu<T> {
     pub fn set_colorscheme(&mut self, cs: ColorScheme) -> &mut Self {
         self.colorscheme = cs;
         self
     }
 }
 
-impl<T> Item<T> {
+impl<T: Send + Sync> Item<T> {
     pub(crate) fn get_colored_alias_for_normal_mode(&self, colorscheme: &ColorScheme) -> String {
         colorize(&self.alias, &colorscheme.items)
     }
