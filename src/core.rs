@@ -85,6 +85,25 @@ impl<T: Send + Sync> Menu<T> {
         self.item_list.extend(items);
         self
     }
+
+    /// reset the menu state and clear all the items that have been added,
+    /// this will not reset the color scheme and other reusable settings
+    pub fn reset(&mut self) -> io::Result<()> {
+        self.item_list.clear();
+        self.matched_item_indices.clear();
+        self.selected = false;
+        self.mode = Mode::Normal;
+
+        let (_, row) = crossterm::cursor::position()?;
+        let (_, rows) = crossterm::terminal::size()?;
+        self.cursor_abs_pos = (row, 0);
+        self.max_row = rows;
+        self.query = String::new();
+        self.insert_idx = 0;
+        self.scroll_offset = 0;
+
+        Ok(())
+    }
 }
 
 // select api
