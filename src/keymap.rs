@@ -23,18 +23,16 @@ impl KeyResponse {
 impl<T: Send + Sync> Menu<T> {
     pub(crate) fn dispatch_key(&mut self, key: KeyEvent) -> io::Result<KeyResponse> {
         match key.modifiers {
-            KeyModifiers::NONE => self.dispatch_code(key.code),
+            KeyModifiers::NONE | KeyModifiers::SHIFT => self.dispatch_code(key.code),
 
             KeyModifiers::CONTROL => {
                 if key.code == KeyCode::Char('c') {
                     return Ok(KeyResponse::new(true, false));
                 }
-                if let Mode::Query = self.mode {
-                    match key.code {
-                        KeyCode::Char('n') => return self.key_down(),
-                        KeyCode::Char('p') => return self.key_up(),
-                        _ => {}
-                    }
+                match key.code {
+                    KeyCode::Char('n') => return self.key_down(),
+                    KeyCode::Char('p') => return self.key_up(),
+                    _ => {}
                 }
                 Ok(KeyResponse::new(false, false))
             }
