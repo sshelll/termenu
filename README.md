@@ -1,28 +1,25 @@
 # Termenu
+
 > fzf-like terminal ui api for rust
 
 ## Demo
+
 ![demo](https://github.com/sshelll/assets/blob/master/termenu/termenu.jpg?raw=true)
 
 ## Install
+
 Add this to your `Cargo.toml`:
+
 ```toml
 [dependencies]
 termenu = "2.1.0"
 ```
 
 Or with `no-pipe` feature, check [Crate Features](#crate-features) for more information.:
+
 ```toml
 [dependencies]
 termenu = { version = "2.1.0", features = ["no-pipe"], default-features = false }
-```
-
-To install the binary, run:
-```bash
-# default
-cargo install termenu@2.1.0
-# with no-pipe feature
-cargo install termenu@2.1.0 --features "no-pipe" --no-default-features
 ```
 
 ## Examples
@@ -60,9 +57,9 @@ fn main() {
 ## Crate Features
 
 - no-pipe
-This crate depends on `crossterm`, by default I enabled `use-dev-tty` feature on `crossterm` to support pipe input.  
-If you don't need to use pipe input, or this feature causes some problems, you can disable it.  
-In that way, `termenu` will only depend on `crossterm` without any features.
+  This crate depends on `crossterm`, by default I enabled `use-dev-tty` feature on `crossterm` to support pipe input.  
+  If you don't need to use pipe input, or this feature causes some problems, you can disable it.  
+  In that way, `termenu` will only depend on `crossterm` without any features.
 
 ## NOTE
 

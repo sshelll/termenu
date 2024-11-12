@@ -44,9 +44,9 @@ pub(crate) use term_clear_from_cursor_down;
 
 macro_rules! term_exec {
     ($content:expr) => {
-        let mut tty = std::fs::OpenOptions::new().write(true).open("/dev/tty")?;
-        crossterm::execute!(tty, $content)?;
-        // crossterm::execute!(std::io::stdout(), $content)?;
+        // let mut tty = std::fs::OpenOptions::new().write(true).open("/dev/tty")?;
+        // crossterm::execute!(tty, $content)?;
+        crossterm::execute!(std::io::stderr(), $content)?;
     };
 }
 pub(crate) use term_exec;
