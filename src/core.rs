@@ -1,6 +1,6 @@
-use std::io::{self};
+use std::io::{self, IsTerminal};
 
-use crossterm::{event, terminal};
+use crossterm::terminal;
 use once_cell::sync::OnceCell;
 
 use crate::{color::colorize, macros::*, ColorScheme, Item, Menu, Mode};
@@ -25,9 +25,11 @@ impl<T: Send + Sync> Menu<T> {
     /// let mut menu = termenu::Menu::new().unwrap();
     /// ```
     pub fn new() -> io::Result<Menu<T>> {
+        let is_pipe = !io::stdin().is_terminal();
         let (_, row) = crossterm::cursor::position()?;
         let (_, rows) = crossterm::terminal::size()?;
         Ok(Menu {
+            is_pipe,
             colorscheme: ColorScheme::default(),
             title: None,
             item_list: Vec::new(),
@@ -112,6 +114,19 @@ impl<T: Send + Sync> Menu<T> {
     /// if the user presses `esc` or `ctrl-c`, `None` will be returned
     /// otherwise, the selected item will be returned
     pub fn select(&mut self) -> io::Result<Option<&T>> {
+        match self.select0()? {
+            Some(item) => Ok(Some(&item.value)),
+            None => Ok(None),
+        }
+    }
+
+    /// Same as [select](Self::select), but return the selected [Item] instead of the value
+    pub fn select_item(&mut self) -> io::Result<Option<&Item<T>>> {
+        self.select0()
+    }
+
+    fn select0(&mut self) -> io::Result<Option<&Item<T>>> {
+        use crossterm::event;
         if self.item_list.is_empty() {
             return Ok(None);
         }
@@ -120,8 +135,7 @@ impl<T: Send + Sync> Menu<T> {
         self.enter_normal_mode()?;
         self.draw()?;
         loop {
-            let evt = event::read()?;
-            if let event::Event::Key(key) = evt {
+            if let event::Event::Key(key) = event::read()? {
                 let resp = self.dispatch_key(key)?;
                 if resp.exit() {
                     break;
@@ -165,7 +179,7 @@ impl<T: Send + Sync> Menu<T> {
         Ok(())
     }
 
-    fn get_selection(&mut self) -> Option<&T> {
+    fn get_selection(&mut self) -> Option<&Item<T>> {
         ignore_io_error!(self.clear()?);
 
         if !self.selected {
@@ -195,10 +209,11 @@ impl<T: Send + Sync> Menu<T> {
             term_cursor_down!(1);
         });
 
-        Some(&item.value)
+        Some(item)
     }
 }
 
+// drop trait
 impl<T: Send + Sync> Drop for Menu<T> {
     fn drop(&mut self) {
         ignore_io_error!({

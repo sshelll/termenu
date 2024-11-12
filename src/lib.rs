@@ -35,6 +35,7 @@
 //! Check the examples folder for more details.
 
 #![allow(dead_code)]
+
 use colored::Color;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use once_cell::sync::OnceCell;
@@ -44,6 +45,7 @@ mod draw;
 mod keymap;
 mod mode;
 mod query;
+mod term;
 
 #[allow(unused_macros)]
 #[macro_use]
@@ -56,7 +58,7 @@ pub struct Item<T>
 where
     T: Send + Sync,
 {
-    alias: String,
+    pub alias: String,
     pub value: T,
     pub(crate) score: Option<i64>,
     pub(crate) matched_indices: Option<Vec<usize>>,
@@ -72,6 +74,8 @@ pub struct Menu<T>
 where
     T: Send + Sync,
 {
+    is_pipe: bool,
+
     colorscheme: ColorScheme,
 
     title: Option<String>,
