@@ -58,7 +58,7 @@ impl<T: Send + Sync> Menu<T> {
         let mut i = 0;
         let mut has_more = false;
         loop {
-            term_cursor_down!(1);
+                term_cursor_down!(1);
 
             // reached the end of the list
             if idx >= item_count {

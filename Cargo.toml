@@ -1,16 +1,22 @@
 [package]
 description = "A fzf-like library for terminal applications"
 name = "termenu"
-version = "2.0.2"
+version = "2.1.0"
 edition = "2021"
 license = "MIT"
 authors = ["sshelll <shaojiale.gitignore@icloud.com>"]
 repository = "https://github.com/sshelll/termenu"
 
 [dependencies]
-crossterm = "0.28"
+crossterm = { version = "0.28", optional = true }
 colored = "2.1.0"
 fuzzy-matcher = "0.3.7"
 once_cell = "1.19.0"
 rayon = "1.10.0"
 num_cpus = "1.16.0"
+clap = { version = "4.5.20", features = ["derive"] }
+
+[features]
+default = ["crossterm-with-tty"]
+no-pipe = ["crossterm"]
+crossterm-with-tty = ["crossterm/use-dev-tty"]
