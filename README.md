@@ -12,14 +12,20 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-termenu = "2.1.0"
+termenu = "2.2.0" # use latest version
 ```
 
 Or with `no-pipe` feature, check [Crate Features](#crate-features) for more information.:
 
 ```toml
 [dependencies]
-termenu = { version = "2.1.0", features = ["no-pipe"], default-features = false }
+termenu = { version = "2.2.0", features = ["no-pipe"], default-features = false }
+```
+
+This crate also provides a binary(like `fzf`), you can install it with:
+
+```bash
+cargo install termenu
 ```
 
 ## Examples
@@ -52,6 +58,20 @@ fn main() {
         println!("You selected: {}", selection);
     }
 }
+```
+
+## Use as a binary
+
+termenu binary is similar to `fzf`, but it's quite simple and has fewer features.  
+It only reads from stdin and prints the selected item to stdout.  
+Use it like this:
+
+```bash
+# basic
+echo '1st item\n2nd item\n3rd item' | termenu
+
+# more complicated
+echo $(echo '1st item\n2nd item\n3rd item' | termenu | grep item)
 ```
 
 ## Crate Features
