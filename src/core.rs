@@ -3,7 +3,7 @@ use std::io::{self, IsTerminal};
 use crossterm::terminal;
 use once_cell::sync::OnceCell;
 
-use crate::{color::colorize, macros::*, ColorScheme, Item, Menu, Mode};
+use crate::{color::colorize, macros::*, term, ColorScheme, Item, Menu, Mode};
 
 impl<T: Send + Sync> Item<T> {
     pub fn new(display: &str, value: T) -> Item<T> {
@@ -26,10 +26,11 @@ impl<T: Send + Sync> Menu<T> {
     /// ```
     pub fn new() -> io::Result<Menu<T>> {
         let is_pipe = !io::stdin().is_terminal();
-        let (_, row) = crossterm::cursor::position()?;
+        let (_, row) = term::get_cursor_position(is_pipe)?;
         let (_, rows) = crossterm::terminal::size()?;
         Ok(Menu {
             is_pipe,
+            enable_print_result: true,
             colorscheme: ColorScheme::default(),
             title: None,
             item_list: Vec::new(),
@@ -74,6 +75,22 @@ impl<T: Send + Sync> Menu<T> {
         self
     }
 
+    /// Controls whether to print the result to stderr after selecting.
+    ///
+    /// For example, by default the result would be print like this in stderr:
+    /// select: $selected_item
+    ///
+    /// You can disable this by calling this function with `false`.
+    ///
+    /// This is useful when you want to use termenu in a pipe like this:
+    /// ```bash
+    /// cat file.txt | termenu | grep 123
+    /// ```
+    pub fn enable_print_result(&mut self, b: bool) -> &mut Self {
+        self.enable_print_result = b;
+        self
+    }
+
     pub(crate) fn get_title(&self) -> &str {
         self.title.as_deref().unwrap_or("select")
     }
@@ -96,7 +113,8 @@ impl<T: Send + Sync> Menu<T> {
         self.selected = false;
         self.mode = Mode::Normal;
 
-        let (_, row) = crossterm::cursor::position()?;
+        // let (_, row) = crossterm::cursor::position()?;
+        let (_, row) = term::get_cursor_position(self.is_pipe)?;
         let (_, rows) = crossterm::terminal::size()?;
         self.cursor_abs_pos = (row, 0);
         self.max_row = rows;
@@ -200,14 +218,16 @@ impl<T: Send + Sync> Menu<T> {
         let item = self.item_list.get(item_idx).unwrap();
 
         // print the result to the terminal
-        ignore_io_error!({
-            term_printf!(
-                "{} {}",
-                colorize(self.get_title(), &self.colorscheme.title),
-                item.alias
-            );
-            term_cursor_down!(1);
-        });
+        if self.enable_print_result {
+            ignore_io_error!({
+                term_printf!(
+                    "{} {}",
+                    colorize(self.get_title(), &self.colorscheme.title),
+                    item.alias
+                );
+                term_cursor_down!(1);
+            });
+        }
 
         Some(item)
     }

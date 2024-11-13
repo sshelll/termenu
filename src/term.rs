@@ -8,7 +8,10 @@ pub(crate) fn get_cursor_position(is_pipe: bool) -> io::Result<(u16, u16)> {
         return crossterm::cursor::position();
     }
 
-    crossterm::terminal::enable_raw_mode()?;
+    let already_raw = crossterm::terminal::is_raw_mode_enabled()?;
+    if !already_raw {
+        crossterm::terminal::enable_raw_mode()?;
+    }
     // open tty
     let mut tty = OpenOptions::new().read(true).write(true).open("/dev/tty")?;
 
@@ -26,7 +29,9 @@ pub(crate) fn get_cursor_position(is_pipe: bool) -> io::Result<(u16, u16)> {
             break;
         }
     }
-    crossterm::terminal::disable_raw_mode()?;
+    if !already_raw {
+        crossterm::terminal::disable_raw_mode()?;
+    }
 
     if let Some(caps) = response
         .strip_prefix("\x1b[")

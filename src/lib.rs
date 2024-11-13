@@ -76,6 +76,8 @@ where
 {
     is_pipe: bool,
 
+    enable_print_result: bool,
+
     colorscheme: ColorScheme,
 
     title: Option<String>,
