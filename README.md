@@ -12,14 +12,14 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-termenu = "2.2.1" # use latest version
+termenu = "2.2.2" # use latest version
 ```
 
 Or with `no-pipe` feature, check [Crate Features](#crate-features) for more information.:
 
 ```toml
 [dependencies]
-termenu = { version = "2.2.1", features = ["no-pipe"], default-features = false }
+termenu = { version = "2.2.2", features = ["no-pipe"], default-features = false }
 ```
 
 This crate also provides a binary(like `fzf`), you can install it with:

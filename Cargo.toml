@@ -1,11 +1,13 @@
 [package]
 description = "A fzf-like library for terminal applications"
 name = "termenu"
-version = "2.2.1"
+version = "2.2.2"
 edition = "2021"
 license = "MIT"
 authors = ["sshelll <shaojiale.gitignore@icloud.com>"]
 repository = "https://github.com/sshelll/termenu"
+keywords = ["fzf", "command-line", "fuzzy-matcher"]
+categories = ["command-line-interface", "command-line-utilities"]
 
 [dependencies]
 crossterm = { version = "0.28", optional = true }
