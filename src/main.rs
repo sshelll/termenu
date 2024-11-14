@@ -79,4 +79,3 @@ fn main() {
         print!("{}", item.alias)
     }
 }
-

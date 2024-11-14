@@ -201,10 +201,12 @@ impl<T: Send + Sync> Menu<T> {
         ignore_io_error!(self.clear()?);
 
         if !self.selected {
+            if self.enable_print_result {
             ignore_io_error!({
                 term_printf!("{}", colorize(self.get_title(), &self.colorscheme.title),);
                 term_cursor_down!(1);
             });
+        }
             return None;
         }
 
