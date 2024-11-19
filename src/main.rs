@@ -35,6 +35,7 @@ macro_rules! quit_now {
 }
 
 fn main() {
+    colored::control::set_override(true);
     let args = Args::parse();
     let mut menu = termenu::Menu::new().unwrap_or_else(|e| quit_now!("Error: {}", e));
     args.name.map(|name| menu.set_title(&name));
