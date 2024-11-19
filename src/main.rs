@@ -1,4 +1,5 @@
 use clap::Parser;
+use clap::ValueEnum;
 use std::io::{self, BufRead};
 use termenu::{FontShape, FontStyle, Item};
 
@@ -18,6 +19,18 @@ struct Args {
     /// line
     #[clap(short, long)]
     disable_escape: bool,
+
+    /// force color output
+    // #[arg(value_enum, default_value_t=ColorMode::Auto)]
+    #[clap(short, long, default_value = "auto")]
+    color: ColorMode,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+enum ColorMode {
+    Auto,
+    Always,
+    Never,
 }
 
 fn validate_max_height(input: &str) -> Result<f32, String> {
@@ -35,8 +48,12 @@ macro_rules! quit_now {
 }
 
 fn main() {
-    colored::control::set_override(true);
     let args = Args::parse();
+    match args.color {
+        ColorMode::Auto => {}
+        ColorMode::Always => colored::control::set_override(true),
+        ColorMode::Never => colored::control::set_override(false),
+    }
     let mut menu = termenu::Menu::new().unwrap_or_else(|e| quit_now!("Error: {}", e));
     args.name.map(|name| menu.set_title(&name));
     args.max_height.map(|percent| menu.set_max_height(percent));
