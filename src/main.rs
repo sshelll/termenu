@@ -95,5 +95,8 @@ fn main() {
         .unwrap_or_else(|e| quit_now!("Error: {}", e));
     if let Some(item) = selection {
         print!("{}", item.alias)
+    } else {
+        drop(menu);
+        std::process::exit(1);
     }
 }
