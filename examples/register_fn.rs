@@ -5,7 +5,7 @@ fn main() {
         item_list.push(termenu::Item::new(
             format!("{}th item", &i).as_str(),
             move || {
-                println!("you selected: {}", i);
+                println!("you selected: {i}");
             },
         ));
     }

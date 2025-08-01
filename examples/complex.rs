@@ -15,7 +15,7 @@ fn main() {
     // build item list
     let mut item_list = Vec::new();
     for i in 1..=100 {
-        item_list.push(Item::new(format!("{}th item", i).as_str(), i));
+        item_list.push(Item::new(format!("{i}th item").as_str(), i));
     }
 
     // build colorscheme, you can skip this step to use the default colorscheme
@@ -57,7 +57,7 @@ fn main() {
 
     // handle selection
     if let Some(selection) = selection {
-        println!("You selected: {}", selection);
+        println!("You selected: {selection}");
     } else {
         println!("You didn't select anything");
     }
