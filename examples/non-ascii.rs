@@ -3,7 +3,7 @@ fn main() {
     let mut item_list = Vec::new();
     for i in 1..=10 {
         item_list.push(termenu::Item::new(
-            format!("{}th オプション/选项/옵션", i).as_str(),
+            format!("{i}th オプション/选项/옵션").as_str(),
             i,
         ));
     }
@@ -13,6 +13,6 @@ fn main() {
         .select()
         .unwrap();
     if let Some(selection) = selection {
-        println!("You selected: {}", selection);
+        println!("You selected: {selection}");
     }
 }

@@ -44,10 +44,7 @@ pub(crate) fn get_cursor_position(is_pipe: bool) -> io::Result<(u16, u16)> {
             return Ok((col, row - 1));
         }
     }
-    Err(io::Error::new(
-        io::ErrorKind::Other,
-        "Failed to parse cursor position",
-    ))
+    Err(io::Error::other("Failed to parse cursor position"))
 }
 
 pub(crate) struct KeyListener {
