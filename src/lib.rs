@@ -114,6 +114,10 @@ pub enum FontShape {
     Italic = 1,
     Bold = 1 << 1,
     Underline = 1 << 2,
+    ItalicBold = 1 | 1 << 1,
+    ItalicUnderline = 1 | 1 << 2,
+    BoldUnderline = 1 << 1 | 1 << 2,
+    ItalicBoldUnderline = 1 | 1 << 1 | 1 << 2,
 }
 
 #[derive(Default, Clone, Copy)]

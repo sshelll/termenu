@@ -436,7 +436,7 @@ dependencies = [
 
 [[package]]
 name = "termenu"
-version = "2.3.2"
+version = "2.3.3"
 dependencies = [
  "clap",
  "colored",
